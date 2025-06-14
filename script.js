@@ -328,8 +328,74 @@ function loadRoutines() {
                                                                                                                                                                                                                                                                                                                                                           }
                                                                                                                                                                                                                                                                                                                                                         }
 
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const parsedData = JSON.parse(e.target.result);
+
+            // Validation
+            if (typeof parsedData !== 'object' || parsedData === null ||
+                typeof parsedData.routines !== 'object' || parsedData.routines === null ||
+                !Array.isArray(parsedData.history)) {
+                alert('Invalid file format. Please select a valid workout data JSON file.');
+                return;
+            }
+
+            if (!confirm('Importing will overwrite existing data. Are you sure?')) {
+                return;
+            }
+
+            localStorage.setItem(routinesKey, JSON.stringify(parsedData.routines));
+            localStorage.setItem(historyKey, JSON.stringify(parsedData.history));
+
+            alert('Data imported successfully!');
+            loadRoutines();
+            loadSavedWorkouts();
+
+        } catch (error) {
+            alert("Error reading or parsing file. Please ensure it's a valid JSON file.");
+            console.error("File import error:", error);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = null; // Reset file input
+}
+
+function exportData() {
+    const workout_routines = JSON.parse(localStorage.getItem('workout_routines') || '{}');
+    const workout_history = JSON.parse(localStorage.getItem('workout_history') || '[]');
+
+    const allData = {
+        routines: workout_routines,
+        history: workout_history
+    };
+
+    const jsonData = JSON.stringify(allData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'workout_data.json';
+    document.body.appendChild(a); // Required for Firefox
+    a.click();
+    document.body.removeChild(a); // Clean up
+    URL.revokeObjectURL(url);
+}
+
 loadRoutines();
 loadSavedWorkouts();
 document.getElementById('toggleSavedWorkoutsBtn').addEventListener('click', toggleSavedWorkoutsDisplay);
 document.getElementById('routineName').addEventListener('input', validateRoutineForm);
+
+// Event listeners for Import/Export
+document.getElementById('exportDataBtn').addEventListener('click', exportData);
+document.getElementById('importFile').addEventListener('change', importData);
+
 validateRoutineForm(); // Initial check
