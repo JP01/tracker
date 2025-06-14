@@ -28,9 +28,60 @@
                                                                                 <h2>Workout in Progress</h2>
                                                                                     <div id="workoutExercises"></div>
                                                                                         <button onclick="saveWorkout()">Finish & Save Workout</button>
-                                                                                          </div>  <script>
+    </div>
+
+    <div class="section" id="savedWorkoutsSection">
+      <button id="toggleSavedWorkoutsBtn">Show/Hide Saved Workouts</button>
+      <h2>My Saved Workouts</h2>
+      <div id="savedWorkoutsList" style="display:none;"></div>
+    </div>
+
+    <script>
                                                                                               const routinesKey = 'workout_routines';
                                                                                                   const historyKey = 'workout_history';
+
+                                                                                                      function loadSavedWorkouts() {
+                                                                                                            const savedWorkoutsList = document.getElementById('savedWorkoutsList');
+                                                                                                            savedWorkoutsList.innerHTML = ''; // Clear previous content
+
+                                                                                                            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+
+                                                                                                            if (!history || history.length === 0) {
+                                                                                                              savedWorkoutsList.innerHTML = '<p>No saved workouts yet.</p>';
+                                                                                                              return;
+                                                                                                            }
+
+                                                                                                            // Iterate in reverse to show most recent workouts first
+                                                                                                            for (let i = history.length - 1; i >= 0; i--) {
+                                                                                                              const workout = history[i];
+                                                                                                              const workoutItem = document.createElement('div');
+                                                                                                              workoutItem.className = 'workout-item exercise-block'; // Re-use some styling
+
+                                                                                                              const dateHeading = document.createElement('h3');
+                                                                                                              dateHeading.textContent = `Workout Date: ${workout.date}`;
+                                                                                                              workoutItem.appendChild(dateHeading);
+
+                                                                                                              workout.exercises.forEach(exercise => {
+                                                                                                                const exerciseDiv = document.createElement('div');
+                                                                                                                exerciseDiv.style.marginBottom = '0.5rem';
+                                                                                                                const exerciseName = document.createElement('p');
+                                                                                                                exerciseName.innerHTML = `<strong>${exercise.name}</strong>`;
+                                                                                                                exerciseDiv.appendChild(exerciseName);
+
+                                                                                                                const setsList = document.createElement('ul');
+                                                                                                                setsList.style.listStyle = 'none';
+                                                                                                                setsList.style.paddingLeft = '1rem';
+                                                                                                                exercise.sets.forEach((set, index) => {
+                                                                                                                  const setItem = document.createElement('li');
+                                                                                                                  setItem.textContent = `Set ${index + 1}: ${set.reps} reps @ ${set.weight} kg`;
+                                                                                                                  setsList.appendChild(setItem);
+                                                                                                                });
+                                                                                                                exerciseDiv.appendChild(setsList);
+                                                                                                                workoutItem.appendChild(exerciseDiv);
+                                                                                                              });
+                                                                                                              savedWorkoutsList.appendChild(workoutItem);
+                                                                                                            }
+                                                                                                          }
 
                                                                                                       function loadRoutines() {
                                                                                                             const routines = JSON.parse(localStorage.getItem(routinesKey) || '{}');
@@ -106,6 +157,17 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         document.getElementById('workoutSection').style.display = 'none';
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             }
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                function toggleSavedWorkoutsDisplay() {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  const list = document.getElementById('savedWorkoutsList');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  if (list.style.display === 'none' || list.style.display === '') {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    list.style.display = 'block';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  } else {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    list.style.display = 'none';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 loadRoutines();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                loadSavedWorkouts();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.getElementById('toggleSavedWorkoutsBtn').addEventListener('click', toggleSavedWorkoutsDisplay);
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   </script></body>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   </html>
